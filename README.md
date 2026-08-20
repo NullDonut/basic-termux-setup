@@ -9,12 +9,7 @@ A basic termux file that configures fastest repo to download and also configures
 ```
 termux-setup-storage
 ```
-
-sk-9E6lFW8A6yYmiiSPRIEY2x8XCpLGc23DqU7g9Ki8CodZVPPw
-
-> Update the packages 
-```
-pkg update -y && pkg upgrade -y
+ upgrade -y
 ```
 #### 2. Copy this repository
 ```
