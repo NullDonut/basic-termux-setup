@@ -1,0 +1,38 @@
+name: extract-overlays
+on:
+  workflow_dispatch:
+    inputs:
+      rom_url:
+        description: Direct URL to OTA zip
+        required: true
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download ROM
+        run: curl -L -o rom.zip "${{ inputs.rom_url }}"
+
+      - name: Get payload.bin
+        run: unzip -o rom.zip payload.bin && rm rom.zip
+
+      - name: Install payload-dumper-go
+        run: |
+          curl -L https://github.com/ssut/payload-dumper-go/releases/latest/download/payload-dumper-go_1.2.2_linux_amd64.tar.gz | tar xz
+          chmod +x payload-dumper-go
+
+      - name: Extract product and vendor
+        run: ./payload-dumper-go -p product,vendor payload.bin
+
+      - name: Pull overlay APKs
+        run: |
+          mkdir -p out p v
+          sudo mount -t erofs -o loop,ro extracted_*/product.img p
+          sudo mount -t erofs -o loop,ro extracted_*/vendor.img v
+          cp p/overlay/framework-res__auto_generated_rro_product.apk out/
+          cp v/overlay/framework-res__auto_generated_rro_vendor.apk out/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: overlays
+          path: out/
